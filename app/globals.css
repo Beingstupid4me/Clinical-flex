@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: #f1f5f9;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-secondary hover:bg-secondary-dark text-white rounded-lg font-medium transition-colors;
+  }
+
+  .btn-accent {
+    @apply px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-lg font-medium transition-colors;
+  }
+
+  .btn-outline {
+    @apply px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-gray-400 transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow p-6 border border-gray-200;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+  }
+
+  .table-header {
+    @apply px-4 py-3 text-left text-sm font-semibold text-gray-700 bg-gray-100;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm text-gray-600 border-t border-gray-200;
+  }
+
+  .cf-topbar {
+    @apply bg-[#8EC641] text-white;
+  }
+
+  .cf-topbar-inner {
+    @apply mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3;
+  }
+
+  .cf-nav-link {
+    @apply text-sm font-semibold text-white/95 transition hover:text-white;
+  }
+
+  .cf-nav-link-active {
+    @apply border-b-2 border-white pb-1 text-white;
+  }
+
+  .cf-hero {
+    @apply relative overflow-hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 72vh;
+  }
+
+  .cf-overlay {
+    @apply absolute inset-0 bg-black/20;
+  }
+
+  .cf-hero-content {
+    @apply relative z-10 mx-auto flex max-w-6xl flex-col justify-center px-4 py-14 text-white;
+    min-height: 72vh;
+  }
+
+  .cf-search-card {
+    @apply mt-6 w-full max-w-md rounded-xl bg-white p-5 text-slate-800 shadow-xl;
+  }
+
+  .cf-card {
+    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm;
+  }
+
+  .cf-section-title {
+    @apply text-2xl font-semibold text-slate-900;
+  }
+
+  .cf-chip {
+    @apply inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600;
+  }
+
+  .cf-footer-wrap {
+    @apply relative;
+  }
+
+  .cf-footer-news {
+    background: linear-gradient(135deg, #8ec641 0%, #0f644c 100%);
+  }
+
+  .cf-footer-main {
+    background: linear-gradient(180deg, #0d1723 0%, #111c29 100%);
+  }
+}
+
+/* Status badges */
+.badge-pending {
+  @apply inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold;
+}
+
+.badge-completed {
+  @apply inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold;
+}
+
+.badge-failed {
+  @apply inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold;
+}
+
+.badge-processing {
+  @apply inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold;
+}

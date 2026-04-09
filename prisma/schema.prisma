@@ -1,0 +1,301 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model customers {
+  UserID       Int            @id
+  Name         String         @db.VarChar(100)
+  AddressLine1 String?        @db.VarChar(100)
+  City         String?        @db.VarChar(50)
+  Phone        String?        @db.VarChar(20)
+  isBanned     Boolean?       @default(false)
+  IsActive     Boolean?       @default(true)
+  CreatedAt    DateTime?      @default(now()) @db.DateTime(0)
+  UpdatedAt    DateTime?      @default(now()) @db.DateTime(0)
+  users        users          @relation(fields: [UserID], references: [UserID], onUpdate: NoAction, map: "customers_ibfk_1")
+  orders       orders[]
+  prescription prescription[]
+}
+
+model delivery_log {
+  Delivery_log_ID    Int                          @id @default(autoincrement())
+  OrderID            Int
+  Delivery_personal  String?                      @db.VarChar(10)
+  Date_of_shipment   DateTime                     @db.Date
+  ActualDeliveryDate DateTime?                    @db.Date
+  DeliveryStatus     delivery_log_DeliveryStatus? @default(PENDING)
+  DeliveryAttempts   Int?                         @default(0)
+  IsActive           Boolean?                     @default(true)
+  CreatedAt          DateTime?                    @default(now()) @db.DateTime(0)
+  UpdatedAt          DateTime?                    @default(now()) @db.DateTime(0)
+  orders             orders                       @relation(fields: [OrderID], references: [OrderID], onUpdate: NoAction, map: "delivery_log_ibfk_1")
+  delivery_personals delivery_personals?          @relation(fields: [Delivery_personal], references: [License_number], onUpdate: NoAction, map: "delivery_log_ibfk_2")
+
+  @@index([Delivery_personal], map: "Delivery_personal")
+  @@index([OrderID], map: "OrderID")
+}
+
+model delivery_personals {
+  License_number String         @id @db.VarChar(10)
+  FirstName      String?        @db.VarChar(50)
+  LastName       String?        @db.VarChar(50)
+  Vehicle_number String?        @db.VarChar(10)
+  Phone          String?        @db.VarChar(20)
+  IsActive       Boolean?       @default(true)
+  CreatedAt      DateTime?      @default(now()) @db.DateTime(0)
+  UpdatedAt      DateTime?      @default(now()) @db.DateTime(0)
+  delivery_log   delivery_log[]
+}
+
+model doctors {
+  UserID        Int            @id
+  FirstName     String?        @db.VarChar(50)
+  LastName      String?        @db.VarChar(50)
+  Specialty     String?        @db.VarChar(50)
+  LicenseNumber String?        @unique(map: "LicenseNumber") @db.VarChar(50)
+  Phone         String?        @db.VarChar(20)
+  IsActive      Boolean?       @default(true)
+  CreatedAt     DateTime?      @default(now()) @db.DateTime(0)
+  UpdatedAt     DateTime?      @default(now()) @db.DateTime(0)
+  users         users          @relation(fields: [UserID], references: [UserID], onUpdate: NoAction, map: "doctors_ibfk_1")
+  prescription  prescription[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model inventory {
+  Inv_ID                Int                     @id @default(autoincrement())
+  ProductID             Int
+  SupplierID            Int
+  Quantity_on_Hand      Int
+  Price                 Decimal                 @db.Decimal(10, 2)
+  ExpiryDate            DateTime                @db.Date
+  ReorderLevel          Int?                    @default(50)
+  MaxStock              Int?                    @default(500)
+  IsActive              Boolean?                @default(true)
+  CreatedAt             DateTime?               @default(now()) @db.DateTime(0)
+  UpdatedAt             DateTime?               @default(now()) @db.DateTime(0)
+  products              products                @relation(fields: [ProductID], references: [ProductID], onUpdate: NoAction, map: "inventory_ibfk_1")
+  suppliers             suppliers               @relation(fields: [SupplierID], references: [UserID], onUpdate: NoAction, map: "inventory_ibfk_2")
+  inventorybatches      inventorybatches[]
+  inventorytransactions inventorytransactions[]
+
+  @@index([ProductID], map: "ProductID")
+  @@index([SupplierID], map: "SupplierID")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model inventorybatches {
+  BatchID           Int       @id @default(autoincrement())
+  Inv_ID            Int
+  BatchNumber       String    @db.VarChar(50)
+  ManufacturerDate  DateTime  @db.Date
+  QuantityReceived  Int
+  QuantityAvailable Int
+  IsActive          Boolean?  @default(true)
+  CreatedAt         DateTime? @default(now()) @db.DateTime(0)
+  UpdatedAt         DateTime? @default(now()) @db.DateTime(0)
+  inventory         inventory @relation(fields: [Inv_ID], references: [Inv_ID], onDelete: Cascade, onUpdate: NoAction, map: "inventorybatches_ibfk_1")
+
+  @@unique([Inv_ID, BatchNumber], map: "unique_batch")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model inventorytransactions {
+  TransactionID   Int                                   @id @default(autoincrement())
+  Inv_ID          Int
+  TransactionType inventorytransactions_TransactionType
+  Quantity        Int
+  Reason          String?                               @db.VarChar(255)
+  ReferenceID     Int?
+  TransactionDate DateTime?                             @default(now()) @db.DateTime(0)
+  IsActive        Boolean?                              @default(true)
+  CreatedAt       DateTime?                             @default(now()) @db.DateTime(0)
+  UpdatedAt       DateTime?                             @default(now()) @db.DateTime(0)
+  inventory       inventory                             @relation(fields: [Inv_ID], references: [Inv_ID], onDelete: Cascade, onUpdate: NoAction, map: "inventorytransactions_ibfk_1")
+
+  @@index([Inv_ID], map: "Inv_ID")
+}
+
+model login_history {
+  HistoryID        Int       @id @default(autoincrement())
+  UserID           Int
+  isSuccess        Boolean?  @default(true)
+  DateTime_Attempt DateTime? @default(now()) @db.DateTime(0)
+  IPAddress        String?   @db.VarChar(45)
+  LoginMethod      String?   @db.VarChar(50)
+  LogoutTime       DateTime? @db.DateTime(0)
+  users            users     @relation(fields: [UserID], references: [UserID], onDelete: Cascade, onUpdate: NoAction, map: "login_history_ibfk_1")
+
+  @@index([UserID], map: "UserID")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model orderitems {
+  OrderItemID     Int       @id @default(autoincrement())
+  OrderID         Int
+  ProductID       Int
+  Quantity        Int
+  PriceAtPurchase Decimal   @db.Decimal(10, 2)
+  IsActive        Boolean?  @default(true)
+  CreatedAt       DateTime? @default(now()) @db.DateTime(0)
+  UpdatedAt       DateTime? @default(now()) @db.DateTime(0)
+  orders          orders    @relation(fields: [OrderID], references: [OrderID], onDelete: Cascade, onUpdate: NoAction, map: "orderitems_ibfk_1")
+  products        products  @relation(fields: [ProductID], references: [ProductID], onUpdate: NoAction, map: "orderitems_ibfk_2")
+
+  @@index([OrderID], map: "OrderID")
+  @@index([ProductID], map: "ProductID")
+}
+
+model orders {
+  OrderID         Int                   @id @default(autoincrement())
+  CustomerNumber  Int
+  Prescription_ID Int?
+  Date_of_order   DateTime?             @default(now()) @db.DateTime(0)
+  TotalAmount     Decimal               @default(0.00) @db.Decimal(12, 2)
+  Status          orders_Status?        @default(PENDING)
+  PaymentStatus   orders_PaymentStatus? @default(PENDING)
+  PaymentDate     DateTime?             @db.DateTime(0)
+  IsActive        Boolean?              @default(true)
+  CreatedAt       DateTime?             @default(now()) @db.DateTime(0)
+  UpdatedAt       DateTime?             @default(now()) @db.DateTime(0)
+  delivery_log    delivery_log[]
+  orderitems      orderitems[]
+  customers       customers             @relation(fields: [CustomerNumber], references: [UserID], onUpdate: NoAction, map: "orders_ibfk_1")
+  prescription    prescription?         @relation(fields: [Prescription_ID], references: [Prescription_No], onUpdate: NoAction, map: "orders_ibfk_2")
+  ratings         ratings[]
+
+  @@index([CustomerNumber], map: "CustomerNumber")
+  @@index([Prescription_ID], map: "Prescription_ID")
+}
+
+model prescription {
+  Prescription_No      Int                  @id @default(autoincrement())
+  Date_of_Prescription DateTime?            @default(now()) @db.DateTime(0)
+  Patient_ID           Int
+  Doctor_ID            Int
+  Drug_Name            String               @db.VarChar(255)
+  Dosage               String               @db.VarChar(255)
+  ExpiryDate           DateTime             @db.Date
+  Status               prescription_Status? @default(ACTIVE)
+  RefillsRemaining     Int?                 @default(0)
+  IsActive             Boolean?             @default(true)
+  CreatedAt            DateTime?            @default(now()) @db.DateTime(0)
+  UpdatedAt            DateTime?            @default(now()) @db.DateTime(0)
+  orders               orders[]
+  customers            customers            @relation(fields: [Patient_ID], references: [UserID], onUpdate: NoAction, map: "prescription_ibfk_1")
+  doctors              doctors              @relation(fields: [Doctor_ID], references: [UserID], onUpdate: NoAction, map: "prescription_ibfk_2")
+
+  @@index([Doctor_ID], map: "Doctor_ID")
+  @@index([Patient_ID], map: "Patient_ID")
+}
+
+model products {
+  ProductID              Int          @id @default(autoincrement())
+  Product_Name           String       @db.VarChar(100)
+  SKU                    String?      @unique(map: "SKU") @db.VarChar(50)
+  Manufacturer           String?      @db.VarChar(100)
+  Strength               String?      @db.VarChar(50)
+  DosageForm             String?      @db.VarChar(50)
+  IsPrescriptionRequired Boolean?     @default(false)
+  IsActive               Boolean?     @default(true)
+  CreatedAt              DateTime?    @default(now()) @db.DateTime(0)
+  UpdatedAt              DateTime?    @default(now()) @db.DateTime(0)
+  inventory              inventory[]
+  orderitems             orderitems[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ratings {
+  RatingID    Int       @id @default(autoincrement())
+  Rating      Int
+  OrderID     Int
+  Supplier_ID Int
+  RatingDate  DateTime? @default(now()) @db.DateTime(0)
+  ReviewText  String?   @db.VarChar(500)
+  IsActive    Boolean?  @default(true)
+  CreatedAt   DateTime? @default(now()) @db.DateTime(0)
+  UpdatedAt   DateTime? @default(now()) @db.DateTime(0)
+  orders      orders    @relation(fields: [OrderID], references: [OrderID], onUpdate: NoAction, map: "ratings_ibfk_1")
+  suppliers   suppliers @relation(fields: [Supplier_ID], references: [UserID], onUpdate: NoAction, map: "ratings_ibfk_2")
+
+  @@unique([OrderID, Supplier_ID], map: "unique_order_supplier_rating")
+  @@index([Supplier_ID], map: "Supplier_ID")
+}
+
+model suppliers {
+  UserID        Int         @id
+  CompanyName   String?     @db.VarChar(100)
+  Address       String?     @db.VarChar(100)
+  Phone         String?     @db.VarChar(20)
+  ContactPerson String?     @db.VarChar(100)
+  IsActive      Boolean?    @default(true)
+  CreatedAt     DateTime?   @default(now()) @db.DateTime(0)
+  UpdatedAt     DateTime?   @default(now()) @db.DateTime(0)
+  inventory     inventory[]
+  ratings       ratings[]
+  users         users       @relation(fields: [UserID], references: [UserID], onUpdate: NoAction, map: "suppliers_ibfk_1")
+}
+
+model users {
+  UserID        Int             @id @default(autoincrement())
+  Email         String          @unique(map: "Email") @db.VarChar(100)
+  PasswordHash  String          @db.VarChar(255)
+  Role          users_Role
+  IsActive      Boolean?        @default(true)
+  CreatedAt     DateTime?       @default(now()) @db.DateTime(0)
+  UpdatedAt     DateTime?       @default(now()) @db.DateTime(0)
+  customers     customers?
+  doctors       doctors?
+  login_history login_history[]
+  suppliers     suppliers?
+}
+
+enum inventorytransactions_TransactionType {
+  RECEIPT
+  SALE
+  ADJUSTMENT
+  DAMAGE
+  RETURN
+  EXPIRY
+}
+
+enum users_Role {
+  CUSTOMER
+  DOCTOR
+  SUPPLIER
+  ADMIN
+}
+
+enum delivery_log_DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum orders_Status {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum orders_PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum prescription_Status {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
